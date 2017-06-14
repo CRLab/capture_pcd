@@ -117,7 +117,7 @@ namespace pcd_capture
         tf::StampedTransform transform;
 
         std::string frame_id = std::string("/camera_rgb_optical_frame");
-        std::string output_frame_id = std::string("/world");
+        std::string output_frame_id = std::string("/gt_object");
         ros::Time now = ros::Time::now();
 //        nh.getParam("frame_id", "frame_id");
 //        nh.getParam("output_frame_id", output_frame_id);
