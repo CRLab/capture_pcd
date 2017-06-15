@@ -117,7 +117,7 @@ namespace pcd_capture
         tf::StampedTransform transform;
 
         std::string frame_id = std::string("/camera_rgb_optical_frame");
-        std::string output_frame_id = std::string("/world");
+        std::string output_frame_id = std::string("/gt_object");
         ros::Time now = ros::Time::now();
 //        nh.getParam("frame_id", "frame_id");
 //        nh.getParam("output_frame_id", output_frame_id);
@@ -152,8 +152,8 @@ namespace pcd_capture
         {
             pcl::PointXYZRGB *point = new pcl::PointXYZRGB;
 
-            point->x = p->x - centroid.x();
-            point->y = p->y - centroid.y();
+            point->x = p->x;
+            point->y = p->y;
             point->z = p->z;
             point->r = p->r;
             point->g = p->g;
@@ -168,33 +168,34 @@ namespace pcd_capture
 
 
 	std::string partial_cf_filepath = goal->result_dir + std::string("partial_cf.pcd");
-	std::string partial_of_filepath = goal->result_dir + std::string("partial_of.pcd");
-	std::string camera2world_filepath = goal->result_dir + std::string("camera_to_world.txt");
-	std::string world2partial_filepath = goal->result_dir + std::string("world_to_partial.txt");
+	std::string partial_of_filepath = goal->result_dir + std::string("partial_gt_object_f.pcd");
+	std::string camera2gt_object_filepath = goal->result_dir + std::string("camera_to_gt_object.txt");
+	std::string gt_object2partial_filepath = goal->result_dir + std::string("gt_object_to_partial.txt");
 
-	ROS_INFO_STREAM("SAVING camera2world to: " << camera2world_filepath.c_str() << std::endl);
-	std::ofstream camera2world_fh;
-	camera2world_fh.open (camera2world_filepath.c_str());
-	camera2world_fh << "frame1, frame2, x, y, z, qw, qx, qy, qz" << std::endl;
-	camera2world_fh << frame_id.c_str() << ", " << output_frame_id << ", " ;
-	camera2world_fh	<< transform.getOrigin().x() << ", " << transform.getOrigin().y() << ", " << transform.getOrigin().z() << ", ";
-	camera2world_fh	<< transform.getRotation().w() << ", " << transform.getRotation().x() << ", " << transform.getRotation().y() << ", " << transform.getRotation().z() << std::endl;
-	camera2world_fh.close();
+	ROS_INFO_STREAM("SAVING camera2gt_object to: " << camera2gt_object_filepath.c_str() << std::endl);
+	std::ofstream camera2gt_object_fh;
+	camera2gt_object_fh.open (camera2gt_object_filepath.c_str());
+	camera2gt_object_fh << "frame1, frame2, x, y, z, qw, qx, qy, qz" << std::endl;
+	camera2gt_object_fh << frame_id.c_str() << ", " << output_frame_id << ", " ;
+	camera2gt_object_fh	<< transform.getOrigin().x() << ", " << transform.getOrigin().y() << ", " << transform.getOrigin().z() << ", ";
+	camera2gt_object_fh	<< transform.getRotation().w() << ", " << transform.getRotation().x() << ", " << transform.getRotation().y() << ", " << transform.getRotation().z() << std::endl;
+	camera2gt_object_fh.close();
 
-	ROS_INFO_STREAM("SAVING world2partial to: " << camera2world_filepath.c_str() << std::endl);
-	std::ofstream world2partial_fh;
-	world2partial_fh.open (world2partial_filepath.c_str());
-	world2partial_fh << "frame1, frame2, x, y, z, qw, qx, qy, qz" << std::endl;
-	world2partial_fh << "world" << ", " << "partial" << ", " ;
-	world2partial_fh << centroid.x() << ", " << centroid.y() << ", 0, ";
-	world2partial_fh << 1 << ", 0, 0, 0" << std::endl;
-	world2partial_fh.close();
+	ROS_INFO_STREAM("SAVING gt_object2partial to: " << camera2gt_object_filepath.c_str() << std::endl);
+	std::ofstream gt_object2partial_fh;
+	gt_object2partial_fh.open (gt_object2partial_filepath.c_str());
+	gt_object2partial_fh << "frame1, frame2, x, y, z, qw, qx, qy, qz" << std::endl;
+	gt_object2partial_fh << "gt_object" << ", " << "partial" << ", " ;
+	gt_object2partial_fh << centroid.x() << ", " << centroid.y() << ", 0, ";
+	gt_object2partial_fh << 1 << ", 0, 0, 0" << std::endl;
+	gt_object2partial_fh.close();
 
 	ROS_INFO_STREAM("SAVING partial_cf to: " << partial_cf_filepath.c_str() << std::endl);
 	pcl::io::savePCDFileBinary( partial_cf_filepath, *downsampledCloud);
 	//pcl::io::savePCDFileBinary( "/home/jvarley/mnt_fyn/combined.pcd", *combinedCloud);
 	//pcl::io::savePCDFileBinary( "/home/jvarley/mnt_fyn/no_outliers.pcd", *noOutlierCloud);
 	ROS_INFO_STREAM("SAVING partial_of to: " << partial_of_filepath.c_str() << std::endl);
+	//Needs to be ascii so mesh_reconstruction can read it in.
 	pcl::io::savePCDFileASCII( partial_of_filepath, *partial_in_object_frame);
 
         as_.setSucceeded(result_);
